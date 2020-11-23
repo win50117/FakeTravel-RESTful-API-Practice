@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FakeTravel.Data;
 using FakeTravel.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace faketravel
 {
@@ -27,13 +29,19 @@ namespace faketravel
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<ITravelRouteRepository, MockTravelRouteRepository>();
+            services.AddDbContext<AppDbContext>(option =>
+            {
+                // option.UseSqlServer("server=localhost; Database=FakeTravelDb; User Id=sa; Password=PaSSword12!");
+                option.UseSqlServer(Configuration["DbContext:ConnectionString"]);
+            });
+            services.AddTransient<ITravelRouteRepository, TravelRouteRepository>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "faketravel", Version = "v1" });
             });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
