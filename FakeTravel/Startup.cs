@@ -14,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace faketravel
 {
@@ -36,7 +37,11 @@ namespace faketravel
             });
             services.AddTransient<ITravelRouteRepository, TravelRouteRepository>();
 
-            services.AddControllers();
+            services.AddControllers(setupAction =>
+            {
+                setupAction.ReturnHttpNotAcceptable = true;
+                // setupAction.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
+            }).AddXmlDataContractSerializerFormatters();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "faketravel", Version = "v1" });

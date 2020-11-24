@@ -18,10 +18,27 @@ namespace faketravel.Controllers
             _travelRouteRepository = travelRouteRepository;
         }
 
+        [HttpGet]
         public IActionResult GetTravelRoutes()
         {
-            var routes = _travelRouteRepository.GetTravelRoutes();
-            return Ok(routes);//回傳狀態碼200ok 和資料。
+            var travelRoutesFromRepo = _travelRouteRepository.GetTravelRoutes();
+            if (travelRoutesFromRepo == null || travelRoutesFromRepo.Count() <= 0)
+            {
+                return NotFound("沒有旅遊路線");
+            }
+            return Ok(travelRoutesFromRepo);//回傳狀態碼200ok 和資料。
+        }
+
+        //api/travelroutes/(travelRouteId)
+        [HttpGet("{travelRouteId}")]
+        public IActionResult GetTravelRouteById(Guid travelRouteId)
+        {
+            var travelRoutesFromRepo = _travelRouteRepository.GetTravelRoute(travelRouteId);
+            if (travelRoutesFromRepo == null)
+            {
+                return NotFound($"旅遊路線{travelRouteId}找不到");
+            }
+            return Ok(travelRoutesFromRepo);
         }
 
     }
