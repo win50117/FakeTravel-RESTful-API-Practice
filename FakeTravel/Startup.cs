@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using AutoMapper;
 
 namespace faketravel
 {
@@ -36,6 +37,10 @@ namespace faketravel
                 option.UseSqlServer(Configuration["DbContext:ConnectionString"]);
             });
             services.AddTransient<ITravelRouteRepository, TravelRouteRepository>();
+            //掃描profile文件
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());//還需要在參數中填入系統的程式集 
+            //AddAutoMapper會自動掃描程式集裡所有包含映射關係的profile文件
+            //通過調用AppDomain.CurrentDomain.GetAssemblies()，AddAutoMapper會把所有profile文件（大概是設定文件的意思），載入到目前的AppDomain中
 
             services.AddControllers(setupAction =>
             {
