@@ -22,11 +22,28 @@ namespace FakeTravel.Services
             return _context.TravelRoutes.Include(t => t.TravelRoutePicture).FirstOrDefault(x => x.Id == travelRouteId);
         }
 
-        public IEnumerable<TravelRoute> GetTravelRoutes()
+        public IEnumerable<TravelRoute> GetTravelRoutes(string keyword, string ratingOperator, int? ratingValue)
         {
+            //IQueryable就是LINQ to SQL語法的回傳型別。可以處理疊加處理linq語法，最後統一訪問資料庫。這種處理過程就叫延遲執行
+            //這一步簡單來說只剩產生SQL語句，並沒有執行資料庫查詢的操作。
+            IQueryable<TravelRoute> result = _context.TravelRoutes.Include(t => t.TravelRoutePicture);
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                keyword = keyword.Trim();//消除多餘空格
+                result = result.Where(t => t.Title.Contains(keyword));
+            }
+            if (ratingValue >= 0)
+            {
+                result = ratingOperator switch
+                {
+                    "largerThan" => result.Where(t => t.Rating >= ratingValue),
+                    "lessThan" => result.Where(t => t.Rating <= ratingValue),
+                    _ => result.Where(t => t.Rating == ratingValue),
+                };
+            }
             //include vs join (include是連接兩張表的方法，透過外鍵連接，而join則是手動不透過外鍵進行連接)
             //通過只用這兩種，可以達到立即載入（Eager Load），另一種叫做延遲載入（Lazy Load）。
-            return _context.TravelRoutes.Include(t => t.TravelRoutePicture);
+            return result.ToList();//ToList是IQueryable的內建函式，通過調用ToList函式，IQueryable就會馬上執行資料庫的訪問，資料庫的資料就會被查詢出來了。
         }
 
         public bool TravelRouteExists(Guid travelRouteId)
@@ -45,4 +62,3 @@ namespace FakeTravel.Services
         }
     }
 }
-

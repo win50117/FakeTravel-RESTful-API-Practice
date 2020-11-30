@@ -20,7 +20,7 @@ namespace FakeTravel.Dtos
         public string Features { get; set; }//賣點介紹
         public string Fees { get; set; }//費用
         public string Notes { get; set; }//說明
-        public ICollection<TravelRoutePicture> TravelRoutePicture { get; set; }
+        public ICollection<TravelRoutePictureDto> TravelRoutePicture { get; set; }
         public double? Rating { get; set; }
 
         //這些原本是Enum的改成string

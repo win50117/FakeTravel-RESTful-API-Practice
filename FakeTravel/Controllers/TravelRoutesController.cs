@@ -7,6 +7,8 @@ using FakeTravel.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
+using System.Text.RegularExpressions;
+using FakeTravel.ResourceParamaters;
 
 namespace faketravel.Controllers
 {
@@ -22,11 +24,17 @@ namespace faketravel.Controllers
             _mapper = mapper;
         }
 
+        //api/travelRoutes?keyword=傳入的參數
         [HttpGet]
         [HttpHead]
-        public IActionResult GetTravelRoutes()
+        //因為我們的api使用了[ApiController]的attribute，[FromQuery]實際上市可以省略的，asp會自動幫我們榜定url中的參數。
+        //如果參數命名不一致可以用[FromQuery(Name = "")]來對應。
+        public IActionResult GetTravelRoutes([FromQuery] TravelRouteResourceParamaters paramaters
+        // [FromQuery] string keyword, 
+        // string rating
+        )//小於lessThan,大於largerThan,等於equalTo,lessThan3,largerThan2,equalTo5
         {
-            var travelRoutesFromRepo = _travelRouteRepository.GetTravelRoutes();
+            var travelRoutesFromRepo = _travelRouteRepository.GetTravelRoutes(paramaters.Keyword, paramaters.RatingOperator, paramaters.RatingValue);
             if (travelRoutesFromRepo == null || travelRoutesFromRepo.Count() <= 0)
             {
                 return NotFound("沒有旅遊路線");
