@@ -11,6 +11,9 @@ namespace FakeTravel.Services
         bool TravelRouteExists(Guid travelRouteId);
         IEnumerable<TravelRoutePicture> GetPictureByTravelRouteId(Guid travelRouteId);//取得圖片
         TravelRoutePicture GetPicture(int pictureId);
+        void AddTravelRoute(TravelRoute travelRoute);
+        void AddTravelRoutePicture(Guid travelRouteId, TravelRoutePicture travelRoutePicture);
+        bool Save();
 
     }
 }

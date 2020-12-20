@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using FakeTravel.Dtos;
+using FakeTravel.Models;
 using FakeTravel.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,7 +36,7 @@ namespace FakeTravel.Controllers
             return Ok(_mapper.Map<IEnumerable<TravelRoutePictureDto>>(pictureFromRepo));
         }
 
-        [HttpGet("{pictureId}")]
+        [HttpGet("{pictureId}", Name = "GetPicture")]
         public IActionResult GetPicture(Guid travelRouteId, int pictureId)
         {
             if (!_travelRouteRepository.TravelRouteExists(travelRouteId))
@@ -48,6 +49,20 @@ namespace FakeTravel.Controllers
                 return NotFound("照片不存在");
             }
             return Ok(_mapper.Map<TravelRoutePictureDto>(pictureFromRepo));
+        }
+
+        [HttpPost]
+        public IActionResult CreateTravelRoutePicture([FromRoute] Guid travelRouteId, [FromBody] TravelRoutePictureForCreationDto travelRoutePictureForCreationDto)
+        {
+            if (!_travelRouteRepository.TravelRouteExists(travelRouteId))
+            {
+                return NotFound("旅遊路線不存在");
+            }
+            var pictureModel = _mapper.Map<TravelRoutePicture>(travelRoutePictureForCreationDto);
+            _travelRouteRepository.AddTravelRoutePicture(travelRouteId, pictureModel);
+            _travelRouteRepository.Save();
+            var pictureToReturn = _mapper.Map<TravelRoutePictureDto>(pictureModel);
+            return CreatedAtRoute("GetPicture", new { travelRouteId = pictureModel.TravelRouteId, pictureId = pictureModel.Id }, pictureToReturn);
         }
     }
 }

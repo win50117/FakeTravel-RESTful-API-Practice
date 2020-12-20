@@ -60,5 +60,34 @@ namespace FakeTravel.Services
         {
             return _context.TravelRoutePictures.Where(x => x.Id == pictureId).FirstOrDefault();
         }
+
+        public void AddTravelRoute(TravelRoute travelRoute)
+        {
+            if (travelRoute == null)
+            {
+                throw new ArgumentNullException(nameof(travelRoute));
+            }
+            _context.TravelRoutes.Add(travelRoute);
+            // _context.SaveChanges();
+        }
+        public void AddTravelRoutePicture(Guid travelRouteId, TravelRoutePicture travelRoutePicture)
+        {
+            if (travelRouteId == Guid.Empty)
+            {
+                throw new ArgumentNullException(nameof(travelRouteId));
+            }
+            if (travelRoutePicture == null)
+            {
+                throw new ArgumentNullException(nameof(travelRoutePicture));
+            }
+            travelRoutePicture.TravelRouteId = travelRouteId;//
+            _context.TravelRoutePictures.Add(travelRoutePicture);
+        }
+        public bool Save()
+        {
+            return (_context.SaveChanges() >= 0);
+        }
+
+
     }
 }

@@ -10,7 +10,7 @@ namespace FakeTravel.Models
         [Key]
         public Guid Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Title 不可為空值")]
         [MaxLength(100)]
         public string Title { get; set; }
 

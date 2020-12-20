@@ -1,3 +1,4 @@
+using System;
 using AutoMapper;
 using FakeTravel.Dtos;
 using FakeTravel.Models;
@@ -24,6 +25,11 @@ namespace FakeTravel.Profiles
                 .ForMember(
                     dest => dest.DepartureCity,
                     opt => opt.MapFrom(src => src.DepartureCity.ToString())
+                );
+            CreateMap<TravelRouteForCreationDto, TravelRoute>()
+                .ForMember(
+                    dest => dest.Id,
+                    opt => opt.MapFrom(src => Guid.NewGuid())
                 );
         }
     }

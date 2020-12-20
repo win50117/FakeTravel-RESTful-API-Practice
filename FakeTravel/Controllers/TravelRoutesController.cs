@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using System.Text.RegularExpressions;
 using FakeTravel.ResourceParamaters;
+using FakeTravel.Models;
 
 namespace faketravel.Controllers
 {
@@ -25,7 +26,7 @@ namespace faketravel.Controllers
         }
 
         //api/travelRoutes?keyword=傳入的參數
-        [HttpGet]
+        [HttpGet(Name = "GetTravelRouteById")]
         [HttpHead]
         //因為我們的api使用了[ApiController]的attribute，[FromQuery]實際上市可以省略的，asp會自動幫我們榜定url中的參數。
         //如果參數命名不一致可以用[FromQuery(Name = "")]來對應。
@@ -73,5 +74,18 @@ namespace faketravel.Controllers
             return Ok(travelRouteDto);
         }
 
+        [HttpPost]
+        public IActionResult CreateTravelRoute([FromBody] TravelRouteForCreationDto travelRouteForCreationDto)
+        {
+            var travelRouteModel = _mapper.Map<TravelRoute>(travelRouteForCreationDto);
+            _travelRouteRepository.AddTravelRoute(travelRouteModel);
+            _travelRouteRepository.Save();
+            //把新增的資料map出來變成TravelRouteDto傳回給API作為資料輸出。
+            var travelRouteToReturn = _mapper.Map<TravelRouteDto>(travelRouteModel);
+            //這邊除了回傳mapping後的travelRouteToReturn資料，也會在回傳的Header裡夾帶使用Get請求的GetTravelRouteById路由+這個新增項目的id
+            //就是一個完整的取得此新增項目的GET請求的url：
+            //https://localhost:5001/api/TravelRoutes?travelRouteId=889f0a7b-55c8-4de2-926f-910a00c45cbe
+            return CreatedAtRoute("GetTravelRouteById", new { travelRouteId = travelRouteToReturn.Id }, travelRouteToReturn);
+        }
     }
 }
