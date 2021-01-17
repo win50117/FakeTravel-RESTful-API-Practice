@@ -11,8 +11,12 @@ namespace FakeTravel.Services
         bool TravelRouteExists(Guid travelRouteId);
         IEnumerable<TravelRoutePicture> GetPictureByTravelRouteId(Guid travelRouteId);//取得圖片
         TravelRoutePicture GetPicture(int pictureId);
+        IEnumerable<TravelRoute> GetTravelRoutesByIDList(IEnumerable<Guid> ids);//取得批量資料
         void AddTravelRoute(TravelRoute travelRoute);
         void AddTravelRoutePicture(Guid travelRouteId, TravelRoutePicture travelRoutePicture);
+        void DeleteTravelRoute(TravelRoute travelRoute);
+        void DeleteTravelRoutes(IEnumerable<TravelRoute> travelRoutes);//批量刪除
+        void DeleteTravelRoutePicture(TravelRoutePicture picture);//在資料庫中刪除參數傳入的旅遊路線圖片類型的資料
         bool Save();
 
     }

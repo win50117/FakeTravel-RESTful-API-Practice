@@ -64,5 +64,19 @@ namespace FakeTravel.Controllers
             var pictureToReturn = _mapper.Map<TravelRoutePictureDto>(pictureModel);
             return CreatedAtRoute("GetPicture", new { travelRouteId = pictureModel.TravelRouteId, pictureId = pictureModel.Id }, pictureToReturn);
         }
+
+        [HttpDelete("{pictureId}")]
+        public IActionResult DeletePicture([FromRoute] Guid travelRouteId, [FromRoute] int pictureId)
+        {
+            if (!_travelRouteRepository.TravelRouteExists(travelRouteId))
+            {
+                return NotFound("旅遊路線不存在");
+            }
+            var picture = _travelRouteRepository.GetPicture(pictureId);
+            _travelRouteRepository.DeleteTravelRoutePicture(picture);
+            _travelRouteRepository.Save();
+            return NoContent();
+        }
+
     }
 }

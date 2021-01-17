@@ -1,3 +1,4 @@
+using System.Xml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,8 @@ using AutoMapper;
 using System.Text.RegularExpressions;
 using FakeTravel.ResourceParamaters;
 using FakeTravel.Models;
+using Microsoft.AspNetCore.JsonPatch;
+using FakeTravel.Helper;
 
 namespace faketravel.Controllers
 {
@@ -86,6 +89,69 @@ namespace faketravel.Controllers
             //就是一個完整的取得此新增項目的GET請求的url：
             //https://localhost:5001/api/TravelRoutes?travelRouteId=889f0a7b-55c8-4de2-926f-910a00c45cbe
             return CreatedAtRoute("GetTravelRouteById", new { travelRouteId = travelRouteToReturn.Id }, travelRouteToReturn);
+        }
+
+        [HttpPut("{travelRouteId}")]
+        public IActionResult UpdateTravelRoute([FromRoute] Guid travelRouteId, [FromBody] TravelRouteForUpdateDto travelRouteForUpdateDto)
+        {
+            if (!_travelRouteRepository.TravelRouteExists(travelRouteId))
+            {
+                return NotFound("旅遊路線找不到");
+            }
+            var travelRouteFromRepo = _travelRouteRepository.GetTravelRoute(travelRouteId);
+            // 1.映射dto
+            // 2.更新dto
+            // 3.映射model
+            _mapper.Map(travelRouteForUpdateDto, travelRouteFromRepo);
+            _travelRouteRepository.Save();
+            return NoContent();
+        }
+
+        [HttpPatch("{travelRouteId}")]
+        public IActionResult PartiallyUpdateTravelRoute([FromRoute] Guid travelRouteId, [FromBody] JsonPatchDocument<TravelRouteForUpdateDto> patchDocument)
+        {
+            if (!_travelRouteRepository.TravelRouteExists(travelRouteId))
+            {
+                return NotFound("旅遊路線找不到");
+            }
+            var travelRouteFromRepo = _travelRouteRepository.GetTravelRoute(travelRouteId);
+            var travelRouteToPatch = _mapper.Map<TravelRouteForUpdateDto>(travelRouteFromRepo);
+            patchDocument.ApplyTo(travelRouteToPatch, ModelState);
+            if (!TryValidateModel(travelRouteToPatch))
+            {
+                return ValidationProblem(ModelState);
+            }
+            _mapper.Map(travelRouteToPatch, travelRouteFromRepo);//使用DTO來更新資料模型 (輸入資料,輸出資料)
+            _travelRouteRepository.Save();
+            return NoContent();
+        }
+
+        [HttpDelete("{travelRouteId}")]
+        public IActionResult DeleteTravelRoute([FromRoute] Guid travelRouteId)
+        {
+            if (!_travelRouteRepository.TravelRouteExists(travelRouteId))
+            {
+                return NotFound("旅遊路線找不到");
+            }
+            var travelRoute = _travelRouteRepository.GetTravelRoute(travelRouteId);
+            _travelRouteRepository.DeleteTravelRoute(travelRoute);
+            _travelRouteRepository.Save();
+            return NoContent();
+        }
+
+        [HttpDelete("({travelIDs})")]
+        public IActionResult DeleteByIDs([ModelBinder(BinderType = typeof(ArrayModelBinder))][FromRoute] IEnumerable<Guid> travelIDs)
+        {
+            if (travelIDs == null)
+            {
+                return BadRequest();
+            }
+
+            var travelRoutesFromRepo = _travelRouteRepository.GetTravelRoutesByIDList(travelIDs);
+            _travelRouteRepository.DeleteTravelRoutes(travelRoutesFromRepo);
+            _travelRouteRepository.Save();
+
+            return NoContent();
         }
     }
 }

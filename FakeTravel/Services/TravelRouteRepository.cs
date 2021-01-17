@@ -61,6 +61,11 @@ namespace FakeTravel.Services
             return _context.TravelRoutePictures.Where(x => x.Id == pictureId).FirstOrDefault();
         }
 
+        public IEnumerable<TravelRoute> GetTravelRoutesByIDList(IEnumerable<Guid> ids)
+        {
+            return _context.TravelRoutes.Where(t => ids.Contains(t.Id)).ToList();
+        }
+
         public void AddTravelRoute(TravelRoute travelRoute)
         {
             if (travelRoute == null)
@@ -83,11 +88,22 @@ namespace FakeTravel.Services
             travelRoutePicture.TravelRouteId = travelRouteId;//
             _context.TravelRoutePictures.Add(travelRoutePicture);
         }
+        public void DeleteTravelRoute(TravelRoute travelRoute)
+        {
+            _context.TravelRoutes.Remove(travelRoute);//透過資料庫上下文物件_context，在旅遊路線列表中，刪除參數傳入的旅遊路線。
+        }
+        public void DeleteTravelRoutes(IEnumerable<TravelRoute> travelRoutes) //批量刪除
+        {
+            _context.TravelRoutes.RemoveRange(travelRoutes);
+        }
+
+        public void DeleteTravelRoutePicture(TravelRoutePicture picture)
+        {
+            _context.TravelRoutePictures.Remove(picture);
+        }
         public bool Save()
         {
             return (_context.SaveChanges() >= 0);
         }
-
-
     }
 }

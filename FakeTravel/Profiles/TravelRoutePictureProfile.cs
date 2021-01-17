@@ -10,6 +10,7 @@ namespace FakeTravel.Profiles
         {
             CreateMap<TravelRoutePicture, TravelRoutePictureDto>();
             CreateMap<TravelRoutePictureForCreationDto, TravelRoutePicture>();
+            CreateMap<TravelRoutePicture, TravelRoutePictureForCreationDto>();
         }
     }
 }

@@ -31,6 +31,8 @@ namespace FakeTravel.Profiles
                     dest => dest.Id,
                     opt => opt.MapFrom(src => Guid.NewGuid())
                 );
+            CreateMap<TravelRouteForUpdateDto, TravelRoute>();
+            CreateMap<TravelRoute, TravelRouteForUpdateDto>();
         }
     }
 }
