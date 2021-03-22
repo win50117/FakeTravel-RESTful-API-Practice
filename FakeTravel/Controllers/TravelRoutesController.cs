@@ -33,12 +33,12 @@ namespace faketravel.Controllers
         [HttpHead]
         //因為我們的api使用了[ApiController]的attribute，[FromQuery]實際上市可以省略的，asp會自動幫我們榜定url中的參數。
         //如果參數命名不一致可以用[FromQuery(Name = "")]來對應。
-        public IActionResult GetTravelRoutes([FromQuery] TravelRouteResourceParamaters paramaters
+        public async Task<IActionResult> GetTravelRoutes([FromQuery] TravelRouteResourceParamaters paramaters
         // [FromQuery] string keyword, 
         // string rating
         )//小於lessThan,大於largerThan,等於equalTo,lessThan3,largerThan2,equalTo5
         {
-            var travelRoutesFromRepo = _travelRouteRepository.GetTravelRoutes(paramaters.Keyword, paramaters.RatingOperator, paramaters.RatingValue);
+            var travelRoutesFromRepo = await _travelRouteRepository.GetTravelRoutesAsync(paramaters.Keyword, paramaters.RatingOperator, paramaters.RatingValue);
             if (travelRoutesFromRepo == null || travelRoutesFromRepo.Count() <= 0)
             {
                 return NotFound("沒有旅遊路線");
@@ -50,9 +50,9 @@ namespace faketravel.Controllers
         //api/travelroutes/(travelRouteId)
         [HttpGet("{travelRouteId}")]
         [HttpHead]
-        public IActionResult GetTravelRouteById(Guid travelRouteId)
+        public async Task<IActionResult> GetTravelRouteById(Guid travelRouteId)
         {
-            var travelRoutesFromRepo = _travelRouteRepository.GetTravelRoute(travelRouteId);
+            var travelRoutesFromRepo = await _travelRouteRepository.GetTravelRouteAsync(travelRouteId);
             if (travelRoutesFromRepo == null)
             {
                 return NotFound($"旅遊路線{travelRouteId}找不到");
@@ -78,11 +78,11 @@ namespace faketravel.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateTravelRoute([FromBody] TravelRouteForCreationDto travelRouteForCreationDto)
+        public async Task<IActionResult> CreateTravelRoute([FromBody] TravelRouteForCreationDto travelRouteForCreationDto)
         {
             var travelRouteModel = _mapper.Map<TravelRoute>(travelRouteForCreationDto);
             _travelRouteRepository.AddTravelRoute(travelRouteModel);
-            _travelRouteRepository.Save();
+            await _travelRouteRepository.SaveAsync();
             //把新增的資料map出來變成TravelRouteDto傳回給API作為資料輸出。
             var travelRouteToReturn = _mapper.Map<TravelRouteDto>(travelRouteModel);
             //這邊除了回傳mapping後的travelRouteToReturn資料，也會在回傳的Header裡夾帶使用Get請求的GetTravelRouteById路由+這個新增項目的id
@@ -92,29 +92,29 @@ namespace faketravel.Controllers
         }
 
         [HttpPut("{travelRouteId}")]
-        public IActionResult UpdateTravelRoute([FromRoute] Guid travelRouteId, [FromBody] TravelRouteForUpdateDto travelRouteForUpdateDto)
+        public async Task<IActionResult> UpdateTravelRoute([FromRoute] Guid travelRouteId, [FromBody] TravelRouteForUpdateDto travelRouteForUpdateDto)
         {
-            if (!_travelRouteRepository.TravelRouteExists(travelRouteId))
+            if (!(await _travelRouteRepository.TravelRouteExistsAsync(travelRouteId)))
             {
                 return NotFound("旅遊路線找不到");
             }
-            var travelRouteFromRepo = _travelRouteRepository.GetTravelRoute(travelRouteId);
+            var travelRouteFromRepo = await _travelRouteRepository.GetTravelRouteAsync(travelRouteId);
             // 1.映射dto
             // 2.更新dto
             // 3.映射model
             _mapper.Map(travelRouteForUpdateDto, travelRouteFromRepo);
-            _travelRouteRepository.Save();
+            await _travelRouteRepository.SaveAsync();
             return NoContent();
         }
 
         [HttpPatch("{travelRouteId}")]
-        public IActionResult PartiallyUpdateTravelRoute([FromRoute] Guid travelRouteId, [FromBody] JsonPatchDocument<TravelRouteForUpdateDto> patchDocument)
+        public async Task<IActionResult> PartiallyUpdateTravelRoute([FromRoute] Guid travelRouteId, [FromBody] JsonPatchDocument<TravelRouteForUpdateDto> patchDocument)
         {
-            if (!_travelRouteRepository.TravelRouteExists(travelRouteId))
+            if (!(await _travelRouteRepository.TravelRouteExistsAsync(travelRouteId)))
             {
                 return NotFound("旅遊路線找不到");
             }
-            var travelRouteFromRepo = _travelRouteRepository.GetTravelRoute(travelRouteId);
+            var travelRouteFromRepo = await _travelRouteRepository.GetTravelRouteAsync(travelRouteId);
             var travelRouteToPatch = _mapper.Map<TravelRouteForUpdateDto>(travelRouteFromRepo);
             patchDocument.ApplyTo(travelRouteToPatch, ModelState);
             if (!TryValidateModel(travelRouteToPatch))
@@ -122,34 +122,34 @@ namespace faketravel.Controllers
                 return ValidationProblem(ModelState);
             }
             _mapper.Map(travelRouteToPatch, travelRouteFromRepo);//使用DTO來更新資料模型 (輸入資料,輸出資料)
-            _travelRouteRepository.Save();
+            await _travelRouteRepository.SaveAsync();
             return NoContent();
         }
 
         [HttpDelete("{travelRouteId}")]
-        public IActionResult DeleteTravelRoute([FromRoute] Guid travelRouteId)
+        public async Task<IActionResult> DeleteTravelRoute([FromRoute] Guid travelRouteId)
         {
-            if (!_travelRouteRepository.TravelRouteExists(travelRouteId))
+            if (!(await _travelRouteRepository.TravelRouteExistsAsync(travelRouteId)))
             {
                 return NotFound("旅遊路線找不到");
             }
-            var travelRoute = _travelRouteRepository.GetTravelRoute(travelRouteId);
+            var travelRoute = await _travelRouteRepository.GetTravelRouteAsync(travelRouteId);
             _travelRouteRepository.DeleteTravelRoute(travelRoute);
-            _travelRouteRepository.Save();
+            await _travelRouteRepository.SaveAsync();
             return NoContent();
         }
 
         [HttpDelete("({travelIDs})")]
-        public IActionResult DeleteByIDs([ModelBinder(BinderType = typeof(ArrayModelBinder))][FromRoute] IEnumerable<Guid> travelIDs)
+        public async Task<IActionResult> DeleteByIDs([ModelBinder(BinderType = typeof(ArrayModelBinder))][FromRoute] IEnumerable<Guid> travelIDs)
         {
             if (travelIDs == null)
             {
                 return BadRequest();
             }
 
-            var travelRoutesFromRepo = _travelRouteRepository.GetTravelRoutesByIDList(travelIDs);
+            var travelRoutesFromRepo = await _travelRouteRepository.GetTravelRoutesByIDListAsync(travelIDs);
             _travelRouteRepository.DeleteTravelRoutes(travelRoutesFromRepo);
-            _travelRouteRepository.Save();
+            await _travelRouteRepository.SaveAsync();
 
             return NoContent();
         }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using FakeTravel.Data;
 using FakeTravel.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,12 +18,12 @@ namespace FakeTravel.Services
             _context = context;
         }
 
-        public TravelRoute GetTravelRoute(Guid travelRouteId)
+        public async Task<TravelRoute> GetTravelRouteAsync(Guid travelRouteId)
         {
-            return _context.TravelRoutes.Include(t => t.TravelRoutePicture).FirstOrDefault(x => x.Id == travelRouteId);
+            return await _context.TravelRoutes.Include(t => t.TravelRoutePicture).FirstOrDefaultAsync(x => x.Id == travelRouteId);
         }
 
-        public IEnumerable<TravelRoute> GetTravelRoutes(string keyword, string ratingOperator, int? ratingValue)
+        public async Task<IEnumerable<TravelRoute>> GetTravelRoutesAsync(string keyword, string ratingOperator, int? ratingValue)
         {
             //IQueryable就是LINQ to SQL語法的回傳型別。可以處理疊加處理linq語法，最後統一訪問資料庫。這種處理過程就叫延遲執行
             //這一步簡單來說只剩產生SQL語句，並沒有執行資料庫查詢的操作。
@@ -43,27 +44,27 @@ namespace FakeTravel.Services
             }
             //include vs join (include是連接兩張表的方法，透過外鍵連接，而join則是手動不透過外鍵進行連接)
             //通過只用這兩種，可以達到立即載入（Eager Load），另一種叫做延遲載入（Lazy Load）。
-            return result.ToList();//ToList是IQueryable的內建函式，通過調用ToList函式，IQueryable就會馬上執行資料庫的訪問，資料庫的資料就會被查詢出來了。
+            return await result.ToListAsync();//ToList是IQueryable的內建函式，通過調用ToList函式，IQueryable就會馬上執行資料庫的訪問，資料庫的資料就會被查詢出來了。
         }
 
-        public bool TravelRouteExists(Guid travelRouteId)
+        public async Task<bool> TravelRouteExistsAsync(Guid travelRouteId)
         {
-            return _context.TravelRoutes.Any(x => x.Id == travelRouteId);
+            return await _context.TravelRoutes.AnyAsync(x => x.Id == travelRouteId);
         }
 
-        public IEnumerable<TravelRoutePicture> GetPictureByTravelRouteId(Guid travelRouteId)
+        public async Task<IEnumerable<TravelRoutePicture>> GetPictureByTravelRouteIdAsync(Guid travelRouteId)
         {
-            return _context.TravelRoutePictures.Where(x => x.TravelRouteId == travelRouteId).ToList();
+            return await _context.TravelRoutePictures.Where(x => x.TravelRouteId == travelRouteId).ToListAsync();
         }
 
-        public TravelRoutePicture GetPicture(int pictureId)
+        public async Task<TravelRoutePicture> GetPictureAsync(int pictureId)
         {
-            return _context.TravelRoutePictures.Where(x => x.Id == pictureId).FirstOrDefault();
+            return await _context.TravelRoutePictures.Where(x => x.Id == pictureId).FirstOrDefaultAsync();
         }
 
-        public IEnumerable<TravelRoute> GetTravelRoutesByIDList(IEnumerable<Guid> ids)
+        public async Task<IEnumerable<TravelRoute>> GetTravelRoutesByIDListAsync(IEnumerable<Guid> ids)
         {
-            return _context.TravelRoutes.Where(t => ids.Contains(t.Id)).ToList();
+            return await _context.TravelRoutes.Where(t => ids.Contains(t.Id)).ToListAsync();
         }
 
         public void AddTravelRoute(TravelRoute travelRoute)
@@ -101,9 +102,9 @@ namespace FakeTravel.Services
         {
             _context.TravelRoutePictures.Remove(picture);
         }
-        public bool Save()
+        public async Task<bool> SaveAsync()
         {
-            return (_context.SaveChanges() >= 0);
+            return (await _context.SaveChangesAsync() >= 0);
         }
     }
 }
